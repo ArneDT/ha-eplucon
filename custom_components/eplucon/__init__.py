@@ -51,6 +51,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
                 heatloading_status = await client.get_heatpump_heatloading_status(entry_device.id)
                 entry_device.heatloading_status = heatloading_status
+                
+                energy_statistics = await client.get_heatpump_energy_statistics(entry_device.id)
+                entry_device.energy_statistics = energy_statistics
 
             return entry_devices
 

@@ -8,6 +8,7 @@ from .DTO.CommonInfoDTO import CommonInfoDTO
 from .DTO.DeviceDTO import DeviceDTO
 from .DTO.RealtimeInfoDTO import RealtimeInfoDTO
 from .DTO.HeatLoadingDTO import HeatLoadingDTO
+from .DTO.EnergyStatisticsDTO import EnergyStatisticsDTO
 
 BASE_URL = "https://koenhendriks.com/eplucon"
 _LOGGER: logging.Logger = logging.getLogger(__package__)
@@ -58,6 +59,18 @@ class EpluconApi:
 
             return realtime_info
 
+    async def get_heatpump_energy_statistics(self, module_id: int) -> dict:
+        url = f"{self._base}/econtrol/modules/{module_id}/get_heatpump_energy_statistics.json"
+        _LOGGER.debug(f"Eplucon Get heatpump energy statistics for {module_id}: {url}")
+
+        async with self._session.get(url, headers=self._headers) as response:
+            data = await response.json()
+            self.validate_response(data)
+            energy_statistics = data.get('data',  [])
+            
+
+            return [EnergyStatisticsDTO(**stat) for stat in energy_statistics]
+        
     async def get_heatpump_heatloading_status(self, module_id: int) -> dict:
         url = f"{self._base}/econtrol/modules/{module_id}/heatloading_status.json"
         _LOGGER.debug(f"Eplucon Get heatpump heatloading status for {module_id}: {url}")

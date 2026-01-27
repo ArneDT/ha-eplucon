@@ -16,11 +16,11 @@ All necessary components for release 1.5.1 have been prepared. A single manual s
 - Entry added for version 1.5.1 with release date 2026-01-27
 - Contains: Fix for PR #31 (import_energy and export_energy type handling)
 
-### 3. Git Tag Created ✅
+### 3. Git Tag Prepared ✅
 - Tag: `1.5.1`
 - Target: `main` branch (commit: 2ac4593)
 - Message: "Release version 1.5.1"
-- Created locally but not yet pushed
+- Status: Ready to be created and pushed via `create_release.sh` script
 
 ### 4. GitHub Actions Workflow ✅
 - File: `.github/workflows/release.yaml`
@@ -36,10 +36,12 @@ All necessary components for release 1.5.1 have been prepared. A single manual s
 
 ## Manual Step Required
 
-To complete the release, someone with write access to the repository needs to push the tag:
+To complete the release, someone with write access to the repository needs to run:
 
 ```bash
-git push origin 1.5.1
+./create_release.sh
+# or for a different version:
+# ./create_release.sh 1.5.2
 ```
 
 Once the tag is pushed:

@@ -18,7 +18,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -35,9 +35,24 @@ jobs:
         id: release_notes
         run: |
           TAG="${{ steps.get_tag.outputs.tag }}"
+          
+          # Check if CHANGELOG.md exists
+          if [ ! -f "CHANGELOG.md" ]; then
+            echo "Error: CHANGELOG.md not found"
+            exit 1
+          fi
+          
           # Extract the section for this version from CHANGELOG.md
           awk "/## \[$TAG\]/,/## \[/{if(/## \[/ && !/## \[$TAG\]/)exit;print}" CHANGELOG.md | grep -v "^## \[$TAG\]" | sed '/^$/d' > release_notes.txt
           
+          # Validate that release notes were extracted
+          if [ ! -s release_notes.txt ]; then
+            echo "Error: No release notes found for version $TAG in CHANGELOG.md"
+            exit 1
+          fi
+          
+          echo "Release notes extracted successfully:"
+          cat release_notes.txt
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:

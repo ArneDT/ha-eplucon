@@ -1,0 +1,50 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g., 1.5.1)'
+        required: true
+        type: string
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Get tag name
+        id: get_tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ inputs.tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Extract release notes from CHANGELOG
+        id: release_notes
+        run: |
+          TAG="${{ steps.get_tag.outputs.tag }}"
+          # Extract the section for this version from CHANGELOG.md
+          awk "/## \[$TAG\]/,/## \[/{if(/## \[/ && !/## \[$TAG\]/)exit;print}" CHANGELOG.md | grep -v "^## \[$TAG\]" | sed '/^$/d' > release_notes.txt
+          
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.get_tag.outputs.tag }}
+          name: v${{ steps.get_tag.outputs.tag }}
+          body_path: release_notes.txt
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

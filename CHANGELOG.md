@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.5.1](https://github.com/koenhendriks/ha-eplucon/releases/1.5.1) - 2026-01-27
+
+### Fixed
+* ([#31](https://github.com/koenhendriks/ha-eplucon/pull/31)) Changed import_energy and export_energy types to Union to handle both int and float values by [@joopmartens](https://github.com/joopmartens)
+
 ## [1.5.0](https://github.com/koenhendriks/ha-eplucon/releases/1.5.0) - 2026-01-23
 
 ### Fixed

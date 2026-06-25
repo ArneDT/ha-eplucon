@@ -12,13 +12,28 @@
                     "api_token": "API Token",
                     "api_endpoint": "API Endpoint"
                 }
+            },
+            "portal": {
+                "title": "Enable Write Access (optional)",
+                "description": "To control your heatpump (set temperatures, modes, etc.) enter your Eplucon portal credentials. Leave blank to skip — write entities will not be created.",
+                "data_description": {
+                    "portal_url": "Override the portal URL (optional)"
+                },
+                "data": {
+                    "portal_username": "Portal Username",
+                    "portal_password": "Portal Password",
+                    "portal_url": "Portal URL"
+                }
             }
         },
         "error": {
             "auth": "Authentication failed. Please check your API token and/or API endpoint.",
             "api": "Failed to connect to the Eplucon API. Please check the API endpoint and try again or check the logs for more info.",
             "unknown": "An unexpected error occurred. Please try again or check the logs for more info.",
-            "no-devices": "No devices found. Ensure you're device is added to your Eplucon account"
+            "no-devices": "No devices found. Ensure you're device is added to your Eplucon account",
+            "portal_auth": "Portal login failed. Please check your username and password.",
+            "portal_error": "Failed to connect to the Eplucon portal. Please check the portal URL and try again.",
+            "portal_incomplete": "Please enter both a username and a password, or leave both blank to skip write access."
         },
         "abort": {
             "single_instance_allowed": "Only a single instance of Eplucon is allowed."
@@ -28,13 +43,17 @@
         "step": {
             "init": {
                 "title": "Eplucon Config options",
-                "description": "Current API token & endpoint",
+                "description": "Update API credentials and optional portal write access",
                 "data_description": {
-                    "api_endpoint": "Override the default API endpoint (optional)"
+                    "api_endpoint": "Override the default API endpoint (optional)",
+                    "portal_url": "Override the portal URL (optional)"
                 },
                 "data": {
                     "api_token": "API Token",
-                    "api_endpoint": "API Endpoint"
+                    "api_endpoint": "API Endpoint",
+                    "portal_username": "Portal Username",
+                    "portal_password": "Portal Password",
+                    "portal_url": "Portal URL"
                 }
             }
         },
@@ -42,7 +61,10 @@
             "auth": "Authentication failed. Please check your API token and/or API endpoint.",
             "api": "Failed to connect to the Eplucon API. Please check the API endpoint and try again or check the logs for more info.",
             "unknown": "An unexpected error occurred. Please try again or check the logs for more info.",
-            "no-devices": "No devices found. Ensure you're device is added to your Eplucon account"
+            "no-devices": "No devices found. Ensure you're device is added to your Eplucon account",
+            "portal_auth": "Portal login failed. Please check your username and password.",
+            "portal_error": "Failed to connect to the Eplucon portal. Please check the portal URL and try again.",
+            "portal_incomplete": "Please enter both a username and a password, or leave both blank to skip write access."
         }
     }
 }

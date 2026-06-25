@@ -17,9 +17,13 @@ from dacite import from_dict
 from .const import (
     DOMAIN,
     PLATFORMS,
+    WRITE_PLATFORMS,
     EPLUCON_PORTAL_URL,
     MANUFACTURER,
     SUPPORTED_TYPES,
+    CONF_PORTAL_USERNAME,
+    CONF_PORTAL_PASSWORD,
+    CONF_PORTAL_URL,
 )
 from .eplucon_api.eplucon_client import (
     EpluconApi,
@@ -27,6 +31,7 @@ from .eplucon_api.eplucon_client import (
     DeviceDTO,
     BASE_URL,
 )
+from .eplucon_api.eplucon_portal_client import EpluconPortalClient
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -89,6 +94,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     session = async_get_clientsession(hass)
     client = EpluconApi(api_token, api_endpoint, session)
+
+    # Build portal client only when credentials are configured
+    portal_username = entry.data.get(CONF_PORTAL_USERNAME)
+    portal_password = entry.data.get(CONF_PORTAL_PASSWORD)
+    portal_url = entry.data.get(CONF_PORTAL_URL, EPLUCON_PORTAL_URL)
+    portal_client: EpluconPortalClient | None = None
+    if portal_username and portal_password:
+        portal_client = EpluconPortalClient(portal_username, portal_password, portal_url)
 
     # Store last known good devices
     hass.data.setdefault(DOMAIN, {})
@@ -182,8 +195,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await coordinator.async_config_entry_first_refresh()
 
     hass.data[DOMAIN][entry.entry_id] = coordinator
+    hass.data[DOMAIN][f"{entry.entry_id}_portal"] = portal_client
 
-    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    platforms = list(PLATFORMS)
+    if portal_client is not None:
+        platforms.extend(WRITE_PLATFORMS)
+
+    await hass.config_entries.async_forward_entry_setups(entry, platforms)
 
     return True
 
@@ -214,11 +232,20 @@ async def register_devices(devices, entry, hass):
 # ----------------------------
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    unload_ok = await hass.config_entries.async_unload_platforms(
-        entry, PLATFORMS
+    portal_client: EpluconPortalClient | None = hass.data[DOMAIN].get(
+        f"{entry.entry_id}_portal"
     )
 
+    platforms = list(PLATFORMS)
+    if portal_client is not None:
+        platforms.extend(WRITE_PLATFORMS)
+
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, platforms)
+
     if unload_ok:
+        if portal_client is not None:
+            await portal_client.async_close()
         hass.data[DOMAIN].pop(entry.entry_id, None)
+        hass.data[DOMAIN].pop(f"{entry.entry_id}_portal", None)
 
     return unload_ok

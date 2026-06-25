@@ -30,8 +30,13 @@ from typing import Any
 DOMAIN = "eplucon"
 MANUFACTURER = "Eplucon"
 PLATFORMS = ["sensor", "binary_sensor"]
+WRITE_PLATFORMS = ["number", "switch", "select"]
 EPLUCON_PORTAL_URL = "https://portaal.eplucon.nl/"
 SUPPORTED_TYPES = ["heat_pump"]
+
+CONF_PORTAL_USERNAME = "portal_username"
+CONF_PORTAL_PASSWORD = "portal_password"
+CONF_PORTAL_URL = "portal_url"
 
 
 

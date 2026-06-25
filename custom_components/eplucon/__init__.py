@@ -140,20 +140,40 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     statistics,
                 )
 
-                # Validate before overwriting
-                if is_valid_realtime_info(realtime_info):
+                # Validate each fetch independently; fall back per-field if invalid
+                last_good = hass.data[DOMAIN]["last_good_devices"].get(device.id)
+
+                realtime_valid = is_valid_realtime_info(realtime_info)
+                if realtime_valid:
                     device.realtime_info = realtime_info
-                    device.heatloading_status = heatloading_status
-                    device.statistics = statistics
-                    hass.data[DOMAIN]["last_good_devices"][device.id] = device
                 else:
                     _LOGGER.warning(
-                        "Invalid realtime data for device %s, keeping last known values",
+                        "Invalid realtime data for device %s, keeping last known value",
                         device.id,
                     )
-                    last_good = hass.data[DOMAIN]["last_good_devices"].get(device.id)
-                    if last_good:
-                        device = last_good
+                    device.realtime_info = last_good.realtime_info if last_good else realtime_info
+
+                if heatloading_status is not None:
+                    device.heatloading_status = heatloading_status
+                else:
+                    _LOGGER.warning(
+                        "Invalid heatloading status for device %s, keeping last known value",
+                        device.id,
+                    )
+                    device.heatloading_status = last_good.heatloading_status if last_good else heatloading_status
+
+                if statistics is not None:
+                    device.statistics = statistics
+                else:
+                    _LOGGER.warning(
+                        "Invalid statistics for device %s, keeping last known value",
+                        device.id,
+                    )
+                    device.statistics = last_good.statistics if last_good else statistics
+
+                # Only store as last_good when all fetches were valid
+                if realtime_valid and heatloading_status is not None and statistics is not None:
+                    hass.data[DOMAIN]["last_good_devices"][device.id] = device
 
                 updated_devices.append(device)
 

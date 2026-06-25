@@ -8,6 +8,7 @@ from .DTO.CommonInfoDTO import CommonInfoDTO
 from .DTO.DeviceDTO import DeviceDTO
 from .DTO.RealtimeInfoDTO import RealtimeInfoDTO
 from .DTO.HeatLoadingDTO import HeatLoadingDTO
+from .DTO.StatisticsDTO import StatisticsDTO
 
 BASE_URL = "https://portaal.eplucon.nl/api/v2"
 
@@ -86,6 +87,52 @@ class EpluconApi:
         heatpump = data["data"].get("heatpump")
 
         return RealtimeInfoDTO(common=common, heatpump=heatpump)
+
+    async def get_latest_statistics(self, module_id: int) -> StatisticsDTO | None:
+        url = f"{self._base}/econtrol/modules/{module_id}/statistics"
+        _LOGGER.debug("Fetching statistics for %s: %s", module_id, url)
+
+        async with self._session.get(url, headers=self._headers) as response:
+            data = await response.json()
+
+        _LOGGER.debug("Statistics raw response for %s (truncated): %s", module_id, str(data)[:200])
+        self._validate_response(data)
+
+        records = data.get("data", {}).get("data", [])
+        if not records:
+            return None
+
+        last = records[-1]
+
+        def _tenth(key: str) -> float | None:
+            val = last.get(key)
+            if val is None or val == -9999:
+                return None
+            return round(val / 10, 1)
+
+        def _float(key: str) -> float | None:
+            val = last.get(key)
+            return float(val) if val is not None else None
+
+        return StatisticsDTO(
+            heating_supply_setpoint=_float("Aanvoer setpoint verwarming"),
+            cooling_supply_setpoint=_float("Aanvoer setpoint koeling"),
+            zone_dg1_temperature=_tenth("Actuele temp. DG1"),
+            zone_sg2_temperature=_tenth("Actuele temp. SG2"),
+            zone_sg3_temperature=_tenth("Actuele temp. SG3"),
+            zone_sg4_temperature=_tenth("Actuele temp. SG4"),
+            heating_setpoint_dg1=_float("Setpoint verwarming DG1"),
+            heating_setpoint_sg2=_float("Setpoint verwarming SG2"),
+            heating_setpoint_sg3=_float("Setpoint verwarming SG3"),
+            heating_setpoint_sg4=_float("Setpoint verwarming SG4"),
+            cooling_setpoint_dg1=_float("Setpoint koeling DG1"),
+            cooling_setpoint_sg2=_float("Setpoint koeling SG2"),
+            cooling_setpoint_sg3=_float("Setpoint koeling SG3"),
+            cooling_setpoint_sg4=_float("Setpoint koeling SG4"),
+            valve_position_sg2=_float("Positie ventiel SG2"),
+            valve_position_sg3=_float("Positie ventiel SG3"),
+            valve_position_sg4=_float("Positie ventiel SG4"),
+        )
 
     async def get_heatpump_heatloading_status(self, module_id: int) -> HeatLoadingDTO:
         url = f"{self._base}/econtrol/modules/{module_id}/heatloading_status"

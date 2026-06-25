@@ -163,6 +163,27 @@ HEATLOADING_SENSOR_DEFS = [
     {"key": "heatloading_for_heating", "name": "Heatloading for Heating", "attr": "heatloading_for_heating", "device_class": None, "value_fn": lambda d: d.heatloading_status.configurations.get("heatloading_for_heating"), "exists_fn": lambda d: (d.heatloading_status is not None and d.heatloading_status.configurations is not None and "heatloading_for_heating" in d.heatloading_status.configurations),},
 ]
 
+# Statistics sensors (from /statistics endpoint, most recent record)
+STATISTICS_SENSOR_DEFS = [
+    {"key": "heating_supply_setpoint", "name": "Heating Supply Setpoint", "attr": "heating_supply_setpoint", "unit": UnitOfTemperature.CELSIUS, "state_class": SensorStateClass.MEASUREMENT, "device_class": SensorDeviceClass.TEMPERATURE},
+    {"key": "cooling_supply_setpoint", "name": "Cooling Supply Setpoint", "attr": "cooling_supply_setpoint", "unit": UnitOfTemperature.CELSIUS, "state_class": SensorStateClass.MEASUREMENT, "device_class": SensorDeviceClass.TEMPERATURE},
+    {"key": "zone_dg1_temperature", "name": "Zone DG1 Temperature", "attr": "zone_dg1_temperature", "unit": UnitOfTemperature.CELSIUS, "state_class": SensorStateClass.MEASUREMENT, "device_class": SensorDeviceClass.TEMPERATURE},
+    {"key": "zone_sg2_temperature", "name": "Zone SG2 Temperature", "attr": "zone_sg2_temperature", "unit": UnitOfTemperature.CELSIUS, "state_class": SensorStateClass.MEASUREMENT, "device_class": SensorDeviceClass.TEMPERATURE},
+    {"key": "zone_sg3_temperature", "name": "Zone SG3 Temperature", "attr": "zone_sg3_temperature", "unit": UnitOfTemperature.CELSIUS, "state_class": SensorStateClass.MEASUREMENT, "device_class": SensorDeviceClass.TEMPERATURE},
+    {"key": "zone_sg4_temperature", "name": "Zone SG4 Temperature", "attr": "zone_sg4_temperature", "unit": UnitOfTemperature.CELSIUS, "state_class": SensorStateClass.MEASUREMENT, "device_class": SensorDeviceClass.TEMPERATURE},
+    {"key": "heating_setpoint_dg1", "name": "Heating Setpoint DG1", "attr": "heating_setpoint_dg1", "unit": UnitOfTemperature.CELSIUS, "state_class": SensorStateClass.MEASUREMENT, "device_class": SensorDeviceClass.TEMPERATURE},
+    {"key": "heating_setpoint_sg2", "name": "Heating Setpoint SG2", "attr": "heating_setpoint_sg2", "unit": UnitOfTemperature.CELSIUS, "state_class": SensorStateClass.MEASUREMENT, "device_class": SensorDeviceClass.TEMPERATURE},
+    {"key": "heating_setpoint_sg3", "name": "Heating Setpoint SG3", "attr": "heating_setpoint_sg3", "unit": UnitOfTemperature.CELSIUS, "state_class": SensorStateClass.MEASUREMENT, "device_class": SensorDeviceClass.TEMPERATURE},
+    {"key": "heating_setpoint_sg4", "name": "Heating Setpoint SG4", "attr": "heating_setpoint_sg4", "unit": UnitOfTemperature.CELSIUS, "state_class": SensorStateClass.MEASUREMENT, "device_class": SensorDeviceClass.TEMPERATURE},
+    {"key": "cooling_setpoint_dg1", "name": "Cooling Setpoint DG1", "attr": "cooling_setpoint_dg1", "unit": UnitOfTemperature.CELSIUS, "state_class": SensorStateClass.MEASUREMENT, "device_class": SensorDeviceClass.TEMPERATURE},
+    {"key": "cooling_setpoint_sg2", "name": "Cooling Setpoint SG2", "attr": "cooling_setpoint_sg2", "unit": UnitOfTemperature.CELSIUS, "state_class": SensorStateClass.MEASUREMENT, "device_class": SensorDeviceClass.TEMPERATURE},
+    {"key": "cooling_setpoint_sg3", "name": "Cooling Setpoint SG3", "attr": "cooling_setpoint_sg3", "unit": UnitOfTemperature.CELSIUS, "state_class": SensorStateClass.MEASUREMENT, "device_class": SensorDeviceClass.TEMPERATURE},
+    {"key": "cooling_setpoint_sg4", "name": "Cooling Setpoint SG4", "attr": "cooling_setpoint_sg4", "unit": UnitOfTemperature.CELSIUS, "state_class": SensorStateClass.MEASUREMENT, "device_class": SensorDeviceClass.TEMPERATURE},
+    {"key": "valve_position_sg2", "name": "Valve Position SG2", "attr": "valve_position_sg2", "unit": PERCENTAGE, "state_class": SensorStateClass.MEASUREMENT},
+    {"key": "valve_position_sg3", "name": "Valve Position SG3", "attr": "valve_position_sg3", "unit": PERCENTAGE, "state_class": SensorStateClass.MEASUREMENT},
+    {"key": "valve_position_sg4", "name": "Valve Position SG4", "attr": "valve_position_sg4", "unit": PERCENTAGE, "state_class": SensorStateClass.MEASUREMENT},
+]
+
 # Friendly text sensors
 FRIENDLY_TEXT_SENSOR_DEFS = [
     {"key": "operation_mode_text", "name": "Operation Mode Text", "value_fn": get_friendly_operation_mode_text},
@@ -218,6 +239,24 @@ for s in HEATLOADING_SENSOR_DEFS:
             device_class=s.get("device_class"),
             value_fn=s.get("value_fn"),
             exists_fn=s.get("exists_fn"),
+        )
+    )
+
+# Statistics sensors
+for s in STATISTICS_SENSOR_DEFS:
+    attr = s["attr"]
+    sensor_list.append(
+        EpluconSensorEntityDescription(
+            key=s["key"],
+            name=s["name"],
+            device_class=s.get("device_class"),
+            native_unit_of_measurement=s.get("unit"),
+            state_class=s.get("state_class"),
+            value_fn=lambda device, attr=attr: getattr(device.statistics, attr, None),
+            exists_fn=lambda device, attr=attr: (
+                device.statistics is not None
+                and getattr(device.statistics, attr, None) is not None
+            ),
         )
     )
 

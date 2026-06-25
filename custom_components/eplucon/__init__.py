@@ -131,10 +131,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     heatloading_status,
                 )
 
+                statistics = await fetch_with_retry(
+                    client.get_latest_statistics, device.id
+                )
+                _LOGGER.debug(
+                    "Statistics for %s: %s",
+                    device.id,
+                    statistics,
+                )
+
                 # Validate before overwriting
                 if is_valid_realtime_info(realtime_info):
                     device.realtime_info = realtime_info
                     device.heatloading_status = heatloading_status
+                    device.statistics = statistics
                     hass.data[DOMAIN]["last_good_devices"][device.id] = device
                 else:
                     _LOGGER.warning(

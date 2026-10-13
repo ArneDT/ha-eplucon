@@ -11,7 +11,7 @@ from homeassistant.components.number import (
     NumberMode,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import UnitOfTemperature
+from homeassistant.const import UnitOfTemperature, UnitOfTime, UnitOfPower
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -28,6 +28,7 @@ _LOGGER = logging.getLogger(__name__)
 class EpluconNumberDescription(NumberEntityDescription):
     command: str
     read_fn: Callable[[DeviceDTO], float | None] = field(default=lambda _: None)
+    entity_registry_enabled_default: bool = True
 
 
 NUMBER_DESCRIPTIONS: list[EpluconNumberDescription] = [
@@ -69,6 +70,7 @@ NUMBER_DESCRIPTIONS: list[EpluconNumberDescription] = [
         native_max_value=65.0,
         native_step=0.5,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        entity_registry_enabled_default=False,
     ),
     EpluconNumberDescription(
         key="stop_heating_above",
@@ -78,6 +80,7 @@ NUMBER_DESCRIPTIONS: list[EpluconNumberDescription] = [
         native_max_value=30.0,
         native_step=0.5,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        entity_registry_enabled_default=False,
     ),
     EpluconNumberDescription(
         key="heating_curve_correction",
@@ -86,6 +89,7 @@ NUMBER_DESCRIPTIONS: list[EpluconNumberDescription] = [
         native_min_value=0,
         native_max_value=4,
         native_step=1,
+        entity_registry_enabled_default=False,
     ),
     EpluconNumberDescription(
         key="stop_passive_cooling_below",
@@ -95,6 +99,7 @@ NUMBER_DESCRIPTIONS: list[EpluconNumberDescription] = [
         native_max_value=35.0,
         native_step=0.5,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        entity_registry_enabled_default=False,
     ),
     EpluconNumberDescription(
         key="stop_active_cooling_below",
@@ -104,6 +109,169 @@ NUMBER_DESCRIPTIONS: list[EpluconNumberDescription] = [
         native_max_value=35.0,
         native_step=0.5,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        entity_registry_enabled_default=False,
+    ),
+    # Heating curve corrections for SG2/SG3/SG4 zones (indexed enum, same as DG1)
+    EpluconNumberDescription(
+        key="heating_curve_correction_sg2",
+        name="Heating Curve Correction SG2",
+        command="heating_curve_correction_sg2",
+        native_min_value=0,
+        native_max_value=4,
+        native_step=1,
+        entity_registry_enabled_default=False,
+    ),
+    EpluconNumberDescription(
+        key="heating_curve_correction_sg3",
+        name="Heating Curve Correction SG3",
+        command="heating_curve_correction_sg3",
+        native_min_value=0,
+        native_max_value=4,
+        native_step=1,
+        entity_registry_enabled_default=False,
+    ),
+    EpluconNumberDescription(
+        key="heating_curve_correction_sg4",
+        name="Heating Curve Correction SG4",
+        command="heating_curve_correction_sg4",
+        native_min_value=0,
+        native_max_value=4,
+        native_step=1,
+        entity_registry_enabled_default=False,
+    ),
+    # Auto-WP (automatic heating/cooling switchover)
+    EpluconNumberDescription(
+        key="auto_wp_winter_start_temp",
+        name="Auto WP Winter Start Temperature",
+        command="auto_wp_winter_start_temp",
+        native_min_value=-10.0,
+        native_max_value=20.0,
+        native_step=0.5,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        entity_registry_enabled_default=False,
+    ),
+    EpluconNumberDescription(
+        key="auto_wp_summer_start_temp",
+        name="Auto WP Summer Start Temperature",
+        command="auto_wp_summer_start_temp",
+        native_min_value=20.0,
+        native_max_value=40.0,
+        native_step=0.5,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        entity_registry_enabled_default=False,
+    ),
+    EpluconNumberDescription(
+        key="auto_wp_switchover_time",
+        name="Auto WP Switchover Time",
+        command="auto_wp_switchover_time",
+        native_min_value=1,
+        native_max_value=24,
+        native_step=1,
+        native_unit_of_measurement=UnitOfTime.HOURS,
+        entity_registry_enabled_default=False,
+    ),
+    # Zwembad (Pool)
+    EpluconNumberDescription(
+        key="pool_temperature",
+        name="Pool Temperature Setpoint",
+        command="pool_temperature",
+        native_min_value=15.0,
+        native_max_value=40.0,
+        native_step=0.5,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        entity_registry_enabled_default=False,
+    ),
+    EpluconNumberDescription(
+        key="pool_winter_program_time",
+        name="Pool Winter Program Time",
+        command="pool_winter_program_time",
+        native_min_value=1,
+        native_max_value=60,
+        native_step=1,
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        entity_registry_enabled_default=False,
+    ),
+    # Energie-besparende modus (Energy saving mode)
+    EpluconNumberDescription(
+        key="energy_saving_threshold",
+        name="Energy Saving Threshold",
+        command="energy_saving_threshold",
+        native_min_value=-10.0,
+        native_max_value=10.0,
+        native_step=0.5,
+        native_unit_of_measurement=UnitOfPower.KILO_WATT,
+        entity_registry_enabled_default=False,
+    ),
+    EpluconNumberDescription(
+        key="energy_saving_measure_time",
+        name="Energy Saving Measure Time",
+        command="energy_saving_measure_time",
+        native_min_value=10,
+        native_max_value=600,
+        native_step=1,
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        entity_registry_enabled_default=False,
+    ),
+    EpluconNumberDescription(
+        key="energy_saving_mode_duration",
+        name="Energy Saving Mode Duration",
+        command="energy_saving_mode_duration",
+        native_min_value=1,
+        native_max_value=24,
+        native_step=1,
+        native_unit_of_measurement=UnitOfTime.HOURS,
+        entity_registry_enabled_default=False,
+    ),
+    EpluconNumberDescription(
+        key="energy_saving_ww_temperature",
+        name="Energy Saving WW Temperature",
+        command="energy_saving_ww_temperature",
+        native_min_value=45,
+        native_max_value=75,
+        native_step=1,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        entity_registry_enabled_default=False,
+    ),
+    EpluconNumberDescription(
+        key="energy_saving_room_temp_calibration",
+        name="Energy Saving Room Temperature Calibration",
+        command="energy_saving_room_temp_calibration",
+        native_min_value=-5.0,
+        native_max_value=5.0,
+        native_step=0.5,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        entity_registry_enabled_default=False,
+    ),
+    # Vermogens-begrenzing (Power limiting)
+    EpluconNumberDescription(
+        key="power_limit",
+        name="Power Limit",
+        command="power_limit",
+        native_min_value=0.0,
+        native_max_value=15.0,
+        native_step=0.5,
+        native_unit_of_measurement=UnitOfPower.KILO_WATT,
+        entity_registry_enabled_default=False,
+    ),
+    EpluconNumberDescription(
+        key="power_limit_hysteresis",
+        name="Power Limit Hysteresis",
+        command="power_limit_hysteresis",
+        native_min_value=0.0,
+        native_max_value=5.0,
+        native_step=0.5,
+        native_unit_of_measurement=UnitOfPower.KILO_WATT,
+        entity_registry_enabled_default=False,
+    ),
+    EpluconNumberDescription(
+        key="power_limit_activation_time",
+        name="Power Limit Activation Time",
+        command="power_limit_activation_time",
+        native_min_value=1,
+        native_max_value=60,
+        native_step=1,
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        entity_registry_enabled_default=False,
     ),
 ]
 
@@ -144,6 +312,10 @@ class EpluconNumberEntity(CoordinatorEntity, NumberEntity):
         self._attr_name = description.name
         self._attr_unique_id = f"{device.id}_{description.key}"
         self._local_value: float | None = None
+
+    @property
+    def entity_registry_enabled_default(self) -> bool:
+        return self.entity_description.entity_registry_enabled_default
 
     @property
     def device_info(self) -> dict:

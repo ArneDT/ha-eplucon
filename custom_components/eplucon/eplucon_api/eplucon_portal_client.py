@@ -14,18 +14,49 @@ _LOGGER = logging.getLogger(__name__)
 
 # All writable commands with their portal code and validation metadata
 COMMANDS: dict[str, dict[str, Any]] = {
+    # Verwarming (Heating)
     "indoor_temperature": {"code": "5704", "type": "float", "min": 10.0, "max": 30.0},
+    "heating_active": {"code": "5813", "type": "boolean", "min": 0, "max": 1},
+    "stop_heating_above": {"code": "5814", "type": "float", "min": 0.0, "max": 30.0},
+    "heating_auxiliary_electric": {"code": "5815", "type": "boolean", "min": 0, "max": 1},
+    "heating_electric_emergency": {"code": "5816", "type": "boolean", "min": 0, "max": 1},
+    "heating_curve_correction": {"code": "5886", "type": "enum", "min": 0, "max": 4},
+    "heating_curve_correction_sg2": {"code": "5902", "type": "enum", "min": 0, "max": 4},
+    "heating_curve_correction_sg3": {"code": "5903", "type": "enum", "min": 0, "max": 4},
+    "heating_curve_correction_sg4": {"code": "5904", "type": "enum", "min": 0, "max": 4},
+    # Koeling (Cooling)
+    "cooling_active": {"code": "5817", "type": "boolean", "min": 0, "max": 1},
+    "stop_active_cooling_below": {"code": "5818", "type": "float", "min": 0.0, "max": 35.0},
+    "stop_passive_cooling_below": {"code": "5901", "type": "float", "min": 0.0, "max": 35.0},
+    # Auto-WP (automatic heating/cooling switchover)
+    "auto_wp_winter_start_temp": {"code": "5819", "type": "float", "min": -10.0, "max": 20.0},
+    "auto_wp_summer_start_temp": {"code": "5820", "type": "float", "min": 20.0, "max": 40.0},
+    "auto_wp_switchover_time": {"code": "5821", "type": "integer", "min": 1, "max": 24},
+    # WW (Warm Water)
     "boiler_temperature": {"code": "5700", "type": "integer", "min": 0, "max": 65},
     "boiler_temperature_delta": {"code": "5804", "type": "float", "min": 5.0, "max": 65.0},
     "warm_water_active": {"code": "5711", "type": "boolean", "min": 0, "max": 1},
+    "ww_electric_emergency": {"code": "5806", "type": "boolean", "min": 0, "max": 1},
+    "ww_electric_support": {"code": "5805", "type": "boolean", "min": 0, "max": 1},
+    # WW Weeksturing (weekly schedule)
+    "ww_weekly_schedule_active": {"code": "5767", "type": "boolean", "min": 0, "max": 1},
+    # Zwembad (Pool)
+    "pool_active": {"code": "5905", "type": "boolean", "min": 0, "max": 1},
+    "pool_temperature": {"code": "5906", "type": "float", "min": 15.0, "max": 40.0},
+    "pool_winter_program_time": {"code": "5907", "type": "integer", "min": 1, "max": 60},
+    # Warmtepomp
     "heatpump_active": {"code": "5715", "type": "enum", "min": 0, "max": 3},
     "heatpump_operation_mode": {"code": "5712", "type": "enum", "min": 1, "max": 5},
-    "heating_active": {"code": "5813", "type": "boolean", "min": 0, "max": 1},
-    "stop_heating_above": {"code": "5814", "type": "float", "min": 0.0, "max": 30.0},
-    "heating_curve_correction": {"code": "5886", "type": "enum", "min": 0, "max": 4},
-    "cooling_active": {"code": "5817", "type": "boolean", "min": 0, "max": 1},
-    "stop_passive_cooling_below": {"code": "5901", "type": "float", "min": 0.0, "max": 35.0},
-    "stop_active_cooling_below": {"code": "5818", "type": "float", "min": 0.0, "max": 35.0},
+    # Energie-besparende modus (Energy saving mode)
+    "energy_saving_threshold": {"code": "5758", "type": "float", "min": -10.0, "max": 10.0},
+    "energy_saving_measure_time": {"code": "5759", "type": "integer", "min": 10, "max": 600},
+    "energy_saving_mode_duration": {"code": "5879", "type": "integer", "min": 1, "max": 24},
+    "energy_saving_ww_temperature": {"code": "5760", "type": "integer", "min": 45, "max": 75},
+    "energy_saving_room_temp_calibration": {"code": "5761", "type": "float", "min": -5.0, "max": 5.0},
+    # Vermogens-begrenzing (Power limiting)
+    "power_limit": {"code": "5775", "type": "float", "min": 0.0, "max": 15.0},
+    "power_limit_hysteresis": {"code": "5776", "type": "float", "min": 0.0, "max": 5.0},
+    "power_limit_activation_time": {"code": "5777", "type": "integer", "min": 1, "max": 60},
 }
 
 # Maps command type → (format value, type value, blockType value) for the portal payload

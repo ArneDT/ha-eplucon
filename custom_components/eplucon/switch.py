@@ -23,9 +23,11 @@ _LOGGER = logging.getLogger(__name__)
 class EpluconSwitchDescription(SwitchEntityDescription):
     command: str
     read_fn: Callable[[DeviceDTO], bool | None] = field(default=lambda _: None)
+    entity_registry_enabled_default: bool = True
 
 
 SWITCH_DESCRIPTIONS: list[EpluconSwitchDescription] = [
+    # Verwarming (Heating)
     EpluconSwitchDescription(
         key="heating_active",
         name="Heating Active",
@@ -36,6 +38,25 @@ SWITCH_DESCRIPTIONS: list[EpluconSwitchDescription] = [
         ),
     ),
     EpluconSwitchDescription(
+        key="heating_auxiliary_electric",
+        name="Auxiliary Electric Heating",
+        command="heating_auxiliary_electric",
+        entity_registry_enabled_default=False,
+    ),
+    EpluconSwitchDescription(
+        key="heating_electric_emergency",
+        name="Heating Electric Emergency Mode",
+        command="heating_electric_emergency",
+        entity_registry_enabled_default=False,
+    ),
+    # Koeling (Cooling)
+    EpluconSwitchDescription(
+        key="cooling_active",
+        name="Cooling Active",
+        command="cooling_active",
+    ),
+    # WW (Warm Water)
+    EpluconSwitchDescription(
         key="warm_water_active",
         name="Warm Water Active",
         command="warm_water_active",
@@ -45,9 +66,29 @@ SWITCH_DESCRIPTIONS: list[EpluconSwitchDescription] = [
         ),
     ),
     EpluconSwitchDescription(
-        key="cooling_active",
-        name="Cooling Active",
-        command="cooling_active",
+        key="ww_electric_emergency",
+        name="WW Electric Emergency Mode",
+        command="ww_electric_emergency",
+        entity_registry_enabled_default=False,
+    ),
+    EpluconSwitchDescription(
+        key="ww_electric_support",
+        name="WW Electric Support",
+        command="ww_electric_support",
+        entity_registry_enabled_default=False,
+    ),
+    # WW Weeksturing (weekly schedule)
+    EpluconSwitchDescription(
+        key="ww_weekly_schedule_active",
+        name="WW Weekly Schedule Active",
+        command="ww_weekly_schedule_active",
+    ),
+    # Zwembad (Pool)
+    EpluconSwitchDescription(
+        key="pool_active",
+        name="Pool Active",
+        command="pool_active",
+        entity_registry_enabled_default=False,
     ),
 ]
 
@@ -87,6 +128,10 @@ class EpluconSwitchEntity(CoordinatorEntity, SwitchEntity):
         self._attr_name = description.name
         self._attr_unique_id = f"{device.id}_{description.key}"
         self._local_is_on: bool | None = None
+
+    @property
+    def entity_registry_enabled_default(self) -> bool:
+        return self.entity_description.entity_registry_enabled_default
 
     @property
     def device_info(self) -> dict:
